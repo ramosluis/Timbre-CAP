@@ -1,2 +1,2 @@
 # Timbre-CAP
-Script de Arduino para automatización de un timbre con HMI.
+Código de Arduino para automatizar el timbre de secundaria del Colegio Americano del Pacífico. Utiliza un Arduino Nano junto a un RTC1307 para mantener la fecha y hora, una pantalla LCD que le muestra al usuario la fecha, hora, y si se está usando el horario de invierno o el de verano. Además cuenta con un switch para cambiar entre ambos horarios y un botón para accionar el timbre de forma manual.
