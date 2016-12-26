@@ -6,7 +6,19 @@
  * Autor: M en C Luis Enrique Ramos Maldonado      *
  * Fecha: 04 de octubre de 2016                    *
  ***************************************************/
-
+/* LCD Circuit:
+  The circuit:
+ * LCD Pin 1 VSS - GND
+ * LCD Pin 2 VCC - +5V
+ * LCD Pin 3 VEE - GND
+ * LCD Pin 4 RS - Nano Pin 9
+ * LCD Pin 5 R/W - GND
+ * LCD Pin 6 E - Nano Pin 8
+ * LCD Pin 11 DB4 - Nano Pin 7
+ * LCD Pin 12 DB5 - Nano Pin 6
+ * LCD Pin 13 DB6 - Nano Pin 5
+ * LCD Pin 14 DB7 - Nano Pin 4
+ */
 // Date and time functions using a DS1307 RTC connected via I2C and Wire lib
 #include <Wire.h>
 #include "RTClib.h"
