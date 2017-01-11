@@ -4,10 +4,8 @@
  * en Colegio Americano del Pacífico               *
  ***************************************************
  * Autor: M en C Luis Enrique Ramos Maldonado      *
- * Fecha: 04 de octubre de 2016                    *
  ***************************************************/
-/* LCD Circuit:
-  The circuit:
+/* Circuito LCD:
  * LCD Pin 1 VSS - GND
  * LCD Pin 2 VCC - +5V
  * LCD Pin 3 VEE - GND
@@ -19,103 +17,141 @@
  * LCD Pin 13 DB6 - Nano Pin 5
  * LCD Pin 14 DB7 - Nano Pin 4
  */
-// Date and time functions using a DS1307 RTC connected via I2C and Wire lib
+
+// Importar funciones de fecha y hora para el DS1307 conectado via I2C
 #include <Wire.h>
 #include "RTClib.h"
 #include <Time.h>
 #include <LiquidCrystal.h>
 
-#define horario 3
-#define transistor 2
-#define boton_manual 
-RTC_DS1307 rtc;
+// Definir pines de entrada y salida
+#define horario 3  // switch para cambiar entre horario de verano e invierno
+#define transistor 2  // transistor que hace que conmute el relevador que activa el timbre
+#define boton_manual   // boton para activar el timbre manualmente
 
-// initialize the library with the numbers of the interface pins
+RTC_DS1307 rtc;  // Objeto de RTC para leer la fecha y hora
+
+// Inicializar la libreria LCD con los pines de interfaz definidos anteriormente
 LiquidCrystal lcd(9, 8, 7, 6, 5, 4);
 
 int segundo, minuto, hora, dia;
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday",
+				"Thursday", "Friday", "Saturday"};
 void setup () 
 {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(transistor, OUTPUT);
   pinMode(horario, INPUT);
 
-  // set up the LCD's number of columns and rows:
+  // Definir el numbero de filas y columnas del LCD:
   lcd.begin(16, 2);
 
+  // Debugging
   Serial.begin(57600);
   if (! rtc.begin()) {
+    lcd.setCursor(0,0);
+    lcd.print("No RTC found!");
     Serial.println("Couldn't find RTC");
     while (1);
   }
 
+  // Mas debugging
   if (! rtc.isrunning()) {
+    lcd.clear();
+    lcd.print("RTC NOT running");
     Serial.println("RTC is NOT running!");
-    // following line sets the RTC to the date & time this sketch was compiled
+    // las siguientes lineas ajustan el RTC a la fecha y hora que el codigo
+    // es compilado, corre solo en caso de que no este corriendo
     // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    // This line sets the RTC with an explicit date & time, for example to set
-    // January 21, 2014 at 3am you would call:
+
+    // Esta linea ajusta el RTC a una fecha y hora explicitas, util para
+    // deubugging
     // rtc.adjust(DateTime(2016, 10, 21, 20, 39, 0));
   }
-  // descomentar y ajustar el siguiente comando para recalibrar rtc
+  // Descomentar y ajustar el siguiente comando para recalibrar rtc
+  // no se recomienda a menos que sepan que estan haciendo, mejor usar las
+  // funciones en el bloque de arriba
   // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  rtc.adjust(DateTime(2016, 11, 2, 14, 49, 55));
+  // rtc.adjust(DateTime(2017, 1, 13, 6, 59, 59));
+  lcd.clear();
 }
 
 void loop () 
 {
-  if (digitalRead(horario) == HIGH) // si es horario de verano
+  // si el switch esta encendido, se usa el horario de verano
+  if (digitalRead(horario) == HIGH) 
   {
     DateTime now = rtc.now();
-    // imprimir al puerto serial la fecha y hora actual
-    // en realidad no se necesita pero me ayuda en el debugging
-//    Serial.print(now.year(), DEC);
-//    Serial.print('/');
-//    Serial.print(now.month(), DEC);
-//    Serial.print('/');
-//    Serial.print(now.day(), DEC);
-//    Serial.print(" (");
-//    Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-//    Serial.print(") ");
-//    Serial.print(now.hour(), DEC);
-//    Serial.print(':');
-//    Serial.print(now.minute(), DEC);
-//    Serial.print(':');
-//    Serial.print(now.second(), DEC);
-//    Serial.println();
-
-    lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print(now.year());
+    // si el dia, mes, hora o segundo estan en un solo digito, ie < 10
+    // agregamos un cero antes de ese digito para mantener consistente
+    // la salida a la pantalla LCD
+
+    // imprimir fecha en formato dia/mes/anio
+    if (now.day() < 10)
+      lcd.print("0");
+    lcd.print(now.day());
     lcd.print("/");
+    if (now.month() < 10)
+      lcd.print("0");
     lcd.print(now.month());
     lcd.print("/");
-    lcd.print(now.day());
+    lcd.print(now.year());
+    lcd.setCursor(13,0);
+
+    // imprimir dia de la semana
+    dia = now.dayOfTheWeek();
+    if (dia == 1)
+      lcd.print("LUN");
+    if (dia == 2)
+      lcd.print("MAR");
+    if (dia == 3)
+      lcd.print("MIE");
+    if (dia == 4)
+      lcd.print("JUE");
+    if (dia == 5)
+      lcd.print("VIE");    
+    if (dia == 6)
+      lcd.print("SAB");
+    if (dia == 0)
+      lcd.print("DOM");
     
+    
+    // imprimir hora 
     lcd.setCursor(0,1);
+    if (now.hour() < 10)
+      lcd.print("0");
     lcd.print(now.hour());
     lcd.print(":");
+    if (now.minute() < 10)
+      lcd.print("0");
     lcd.print(now.minute());
     lcd.print(":");
+    if (now.second() < 10)
+      lcd.print("0");
     lcd.print(now.second());
     lcd.setCursor(13,1);
+    // imprimir que se esta usando el horario de verano
     lcd.print("VER");
   
-    // lunes = 0 y domingo = 7
-    dia = now.dayOfTheWeek();
     hora = now.hour();
     minuto = now.minute();
     segundo = now.second();
   
-    // encender y apagar alarma dependiendo del horario o si se presiona un boton 
-    if ( (dia >= 0 && dia <= 5) && (segundo == 0) && ( (hora == 7 && (minuto == 0 || minuto == 50)) || (hora == 8 && minuto == 40) || (hora == 9 && (minuto == 30 || minuto == 45)) || (hora == 10 && minuto == 35) || (hora == 11 && minuto == 20) || (hora == 12 && (minuto == 10 || minuto == 25)) || (hora == 13 && minuto == 15) || (hora == 14 && (minuto == 0 || minuto == 50)) || (hora == 15 && minuto == 10) ) )
+    // encender y apagar alarma dependiendo del horario o si se presiona un boton
+    if ( (dia >= 1 && dia <= 5) && (segundo == 0) && ( (hora == 7 && 
+		(minuto == 0 || minuto == 50)) || (hora == 8 && minuto == 40) ||
+		(hora == 9 && (minuto == 30 || minuto == 45)) || (hora == 10 &&
+		minuto == 35) || (hora == 11 && minuto == 20) || (hora == 12 &&
+		(minuto == 10 || minuto == 25)) || (hora == 13 && minuto == 15)
+		|| (hora == 14 && (minuto == 0 || minuto == 50)) ||
+		(hora == 15 && minuto == 10) ) )
     {
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(transistor, HIGH);
     }
-    else if (segundo == 5)
+    else if (segundo == 5) // la alarma suena por 5 segundos
     {
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(transistor, LOW);
@@ -125,48 +161,62 @@ void loop ()
   else // si es invierno
   {
     DateTime now = rtc.now();
-    // imprimir al puerto serial la fecha y hora actual
-    // en realidad no se necesita pero me ayuda en el debugging
-//    Serial.print(now.year(), DEC);
-//    Serial.print('/');
-//    Serial.print(now.month(), DEC);
-//    Serial.print('/');
-//    Serial.print(now.day(), DEC);
-//    Serial.print(" (");
-//    Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-//    Serial.print(") ");
-//    Serial.print(now.hour(), DEC);
-//    Serial.print(':');
-//    Serial.print(now.minute(), DEC);
-//    Serial.print(':');
-//    Serial.print(now.second(), DEC);
-//    Serial.println();
-
-    lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print(now.year());
+    if (now.day() < 10)
+      lcd.print("0");
+    lcd.print(now.day());
     lcd.print("/");
+    if (now.month() < 10)
+      lcd.print("0");
     lcd.print(now.month());
     lcd.print("/");
-    lcd.print(now.day());
+    lcd.print(now.year());
+    lcd.setCursor(13,0);
+    dia = now.dayOfTheWeek();
+    if (dia == 1)
+      lcd.print("LUN");
+    if (dia == 2)
+      lcd.print("MAR");
+    if (dia == 3)
+      lcd.print("MIE");
+    if (dia == 4)
+      lcd.print("JUE");
+    if (dia == 5)
+      lcd.print("VIE");    
+    if (dia == 6)
+      lcd.print("SAB");
+    if (dia == 0)
+      lcd.print("DOM");
+    
+    
     
     lcd.setCursor(0,1);
+    if (now.hour() < 10)
+      lcd.print("0");
     lcd.print(now.hour());
     lcd.print(":");
+    if (now.minute() < 10)
+      lcd.print("0");
     lcd.print(now.minute());
     lcd.print(":");
+    if (now.second() < 10)
+      lcd.print("0");
     lcd.print(now.second());
     lcd.setCursor(13,1);
     lcd.print("INV");
   
-    // lunes = 0 y domingo = 7
-    dia = now.dayOfTheWeek();
     hora = now.hour();
     minuto = now.minute();
     segundo = now.second();
   
-    // encender y apagar alarma dependiendo del horario o si se presiona un boton 
-    if ( (dia >= 0 && dia <= 5) && (segundo == 0) && ( (hora == 7 && minuto == 30) || (hora == 8 && minuto == 15) || (hora == 9 && (minuto == 0 || minuto == 45)) || (hora == 10 && (minuto == 0 || minuto == 40)) || (hora == 11 && minuto == 25) || (hora == 12 && (minuto == 10 || minuto == 25)) || (hora == 13 && minuto == 15) || (hora == 14 && (minuto == 0 || minuto == 50)) || (hora == 15 && minuto == 10) ) )
+    // encender y apagar alarma de acuerdo al horario de invierno
+    if ( (dia >= 1 && dia <= 5) && (segundo == 0) && ( (hora == 7
+		&& minuto == 30) || (hora == 8 && minuto == 15) || (hora == 9 &&
+		(minuto == 0 || minuto == 45)) || (hora == 10 && (minuto == 0 ||
+		minuto == 40)) || (hora == 11 && minuto == 25) || (hora == 12 &&
+		(minuto == 10 || minuto == 25)) || (hora == 13 && minuto == 15) ||
+		(hora == 14 && (minuto == 0 || minuto == 50)) || (hora == 15
+		&& minuto == 10) ) )
     {
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(transistor, HIGH);
