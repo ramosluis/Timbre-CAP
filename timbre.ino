@@ -151,7 +151,7 @@ void loop ()
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(transistor, HIGH);
     }
-    else if (segundo == 5) // la alarma suena por 5 segundos
+    if (segundo == 6) // la alarma suena por 5 segundos
     {
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(transistor, LOW);
@@ -221,7 +221,7 @@ void loop ()
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(transistor, HIGH);
     }
-    else if (segundo == 5)
+    if (segundo == 6)
     {
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(transistor, LOW);
