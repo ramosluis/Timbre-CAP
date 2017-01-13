@@ -1,21 +1,12 @@
 /***************************************************
  * Programa para automatizar el timbre que marca   *
  * el inicio y fin de cada periodo de secundaria   *
- * en Colegio Americano del Pacífico               *
+ * en Colegio Americano del Pacifico               *
  ***************************************************
  * Autor: M en C Luis Enrique Ramos Maldonado      *
  ***************************************************/
-/* Circuito LCD:
- * LCD Pin 1 VSS - GND
- * LCD Pin 2 VCC - +5V
- * LCD Pin 3 VEE - GND
- * LCD Pin 4 RS - Nano Pin 9
- * LCD Pin 5 R/W - GND
- * LCD Pin 6 E - Nano Pin 8
- * LCD Pin 11 DB4 - Nano Pin 7
- * LCD Pin 12 DB5 - Nano Pin 6
- * LCD Pin 13 DB6 - Nano Pin 5
- * LCD Pin 14 DB7 - Nano Pin 4
+/* Circuito y codigo pueden ser vistos/descargados en:
+ *  https://github.com/ramosluis/Timbre-CAP
  */
 
 // Importar funciones de fecha y hora para el DS1307 conectado via I2C
@@ -36,8 +27,6 @@ LiquidCrystal lcd(9, 8, 7, 6, 5, 4);
 
 int segundo, minuto, hora, dia;
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday",
-				"Thursday", "Friday", "Saturday"};
 void setup () 
 {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -140,28 +129,33 @@ void loop ()
     segundo = now.second();
   
     // encender y apagar alarma dependiendo del horario o si se presiona un boton
-    if ( (dia >= 1 && dia <= 5) && (segundo == 0) && ( (hora == 7 && 
-		(minuto == 0 || minuto == 50)) || (hora == 8 && minuto == 40) ||
-		(hora == 9 && (minuto == 30 || minuto == 45)) || (hora == 10 &&
-		minuto == 35) || (hora == 11 && minuto == 20) || (hora == 12 &&
-		(minuto == 10 || minuto == 25)) || (hora == 13 && minuto == 15)
-		|| (hora == 14 && (minuto == 0 || minuto == 50)) ||
+    if ( (dia >= 1 && dia <= 5) && (segundo == 0) && 
+		( (hora == 7 && (minuto == 0 || minuto == 50)) ||
+		(hora == 8 && minuto == 40) ||
+		(hora == 9 && (minuto == 30 || minuto == 45)) ||
+		(hora == 10 && minuto == 35) ||
+		(hora == 11 && minuto == 20) ||
+		(hora == 12 && (minuto == 10 || minuto == 25)) ||
+		(hora == 13 && minuto == 15) ||
+		(hora == 14 && (minuto == 0 || minuto == 50)) ||
 		(hora == 15 && minuto == 10) ) )
     {
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(transistor, HIGH);
     }
-    if (segundo == 6) // la alarma suena por 5 segundos
+    if (segundo == 5) // la alarma suena por 5 segundos
     {
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(transistor, LOW);
     }
     Serial.println();
   }
-  else // si es invierno
+  else // si es invierno, solo cambian las horas en que suena el timbre
   {
     DateTime now = rtc.now();
     lcd.setCursor(0,0);
+    
+    // imprimir fecha en formato dia/mes/anio
     if (now.day() < 10)
       lcd.print("0");
     lcd.print(now.day());
@@ -172,6 +166,8 @@ void loop ()
     lcd.print("/");
     lcd.print(now.year());
     lcd.setCursor(13,0);
+
+    // imprimir dia de la semana
     dia = now.dayOfTheWeek();
     if (dia == 1)
       lcd.print("LUN");
@@ -187,8 +183,6 @@ void loop ()
       lcd.print("SAB");
     if (dia == 0)
       lcd.print("DOM");
-    
-    
     
     lcd.setCursor(0,1);
     if (now.hour() < 10)
@@ -210,18 +204,21 @@ void loop ()
     segundo = now.second();
   
     // encender y apagar alarma de acuerdo al horario de invierno
-    if ( (dia >= 1 && dia <= 5) && (segundo == 0) && ( (hora == 7
-		&& minuto == 30) || (hora == 8 && minuto == 15) || (hora == 9 &&
-		(minuto == 0 || minuto == 45)) || (hora == 10 && (minuto == 0 ||
-		minuto == 40)) || (hora == 11 && minuto == 25) || (hora == 12 &&
-		(minuto == 10 || minuto == 25)) || (hora == 13 && minuto == 15) ||
-		(hora == 14 && (minuto == 0 || minuto == 50)) || (hora == 15
-		&& minuto == 10) ) )
+    if ( (dia >= 1 && dia <= 5) && (segundo == 0) &&
+		( (hora == 7 && minuto == 30) ||
+		(hora == 8 && minuto == 15) ||
+		(hora == 9 && (minuto == 0 || minuto == 45)) ||
+		(hora == 10 && (minuto == 0 || minuto == 40)) ||
+		(hora == 11 && minuto == 25) ||
+		(hora == 12 && (minuto == 10 || minuto == 25)) ||
+		(hora == 13 && minuto == 15) ||
+		(hora == 14 && (minuto == 0 || minuto == 50)) ||
+		(hora == 15 && minuto == 10) ) )
     {
       digitalWrite(LED_BUILTIN, HIGH);
       digitalWrite(transistor, HIGH);
     }
-    if (segundo == 6)
+    if (segundo == 5)
     {
       digitalWrite(LED_BUILTIN, LOW);
       digitalWrite(transistor, LOW);
