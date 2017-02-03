@@ -62,7 +62,12 @@ void setup()
 void loop()
 {
   // Send Day-of-Week
-  Serial.print(rtc.getDOWStr(FORMAT_SHORT));
+  String dayWeek = rtc.getDOWStr(FORMAT_SHORT);
+  Serial.print(dayWeek);
+  if (dayWeek == "Mon" || dayWeek == "Tue" || dayWeek == "Wed" || dayWeek == "Thu" || dayWeek == "Fri")
+    Serial.print(" Work day. ");
+  else
+    Serial.print(" Weekend! "); 
   Serial.print(" ");
   
   // Send date
