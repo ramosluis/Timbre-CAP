@@ -1,118 +1,160 @@
-// DS3231_Serial_Easy
-// Copyright (C)2015 Rinky-Dink Electronics, Henning Karlsen. All right reserved
-// web: http://www.RinkyDinkElectronics.com/
-//
-// A quick demo of how to use my DS3231-library to 
-// quickly send time and date information over a serial link
-//
-// To use the hardware I2C (TWI) interface of the Arduino you must connect
-// the pins as follows:
-//
-// Arduino Uno/2009:
-// ----------------------
-// DS3231:  SDA pin   -> Arduino Analog 4 or the dedicated SDA pin
-//          SCL pin   -> Arduino Analog 5 or the dedicated SCL pin
-//
-// Arduino Leonardo:
-// ----------------------
-// DS3231:  SDA pin   -> Arduino Digital 2 or the dedicated SDA pin
-//          SCL pin   -> Arduino Digital 3 or the dedicated SCL pin
-//
-// Arduino Mega:
-// ----------------------
-// DS3231:  SDA pin   -> Arduino Digital 20 (SDA) or the dedicated SDA pin
-//          SCL pin   -> Arduino Digital 21 (SCL) or the dedicated SCL pin
-//
-// Arduino Due:
-// ----------------------
-// DS3231:  SDA pin   -> Arduino Digital 20 (SDA) or the dedicated SDA1 (Digital 70) pin
-//          SCL pin   -> Arduino Digital 21 (SCL) or the dedicated SCL1 (Digital 71) pin
-//
-// The internal pull-up resistors will be activated when using the 
-// hardware I2C interfaces.
-//
-// You can connect the DS3231 to any available pin but if you use any
-// other than what is described above the library will fall back to
-// a software-based, TWI-like protocol which will require exclusive access 
-// to the pins used, and you will also have to use appropriate, external
-// pull-up resistors on the data and clock signals.
-//
+/***************************************************
+ * Programa para automatizar el timbre que marca   *
+ * el inicio y fin de cada periodo de secundaria   *
+ * en Colegio Americano del Pacifico               *
+ ***************************************************
+ * Autor: M en C Luis Enrique Ramos Maldonado      *
+ ***************************************************
+ * Circuito y codigo pueden ser vistos/descargados en:
+ *  https://github.com/ramosluis/Timbre-CAP
+ *  Libreria RTC:
+ *  http://www.RinkyDinkElectronics.com/
+ */
 
+// Importar libreria de RTC y LCD
 #include <DS3231.h>
+#include <LiquidCrystal.h>
 
-// Init the DS3231 using the hardware interface
+// Inicializar RTC via I2C
 DS3231  rtc(SDA, SCL);
+
+// Definir pines de entrada y salida
+#define horario 3  // switch para cambiar entre horario de verano e invierno
+#define transistor 2  // transistor que hace que conmute el relevador que activa el timbre
+#define boton_manual   // boton para activar el timbre manualmente
+
+// Inicializar la libreria LCD con los pines de interfaz definidos anteriormente
+LiquidCrystal lcd(9, 8, 7, 6, 5, 4);
+
+int currentHour, currentMinute, currentSecond;
+String currentTime = "", dayWeek = "";
 
 void setup()
 {
-  // Setup Serial connection
-  Serial.begin(115200);
-  // Uncomment the next line if you are using an Arduino Leonardo
-  //while (!Serial) {}
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(transistor, OUTPUT);
+  pinMode(horario, INPUT);
+
+  // Definir el numbero de filas y columnas del LCD:
+  lcd.begin(16, 2);
+
+  // Setup Serial connection >>>> DEBUG ONLY
+  // Serial.begin(115200);
   
   // Initialize the rtc object
   rtc.begin();
   
   // The following lines can be uncommented to set the date and time
-  //rtc.setDOW(WEDNESDAY);     // Set Day-of-Week to SUNDAY
-  //rtc.setTime(12, 0, 0);     // Set the time to 12:00:00 (24hr format)
-  //rtc.setDate(1, 1, 2014);   // Set the date to January 1st, 2014
+//  rtc.setDOW(FRIDAY);     // Set Day-of-Week to SUNDAY
+//  rtc.setTime(14, 59, 55);     // Set the time to 12:00:00 (24hr format)
+//  rtc.setDate(1, 2, 2017);   // Set the date to January 1st, 2014
 }
 
 void loop()
 {
-  // Send Day-of-Week
-  String dayWeek = rtc.getDOWStr(FORMAT_SHORT);
-  Serial.print(dayWeek);
-  if (dayWeek == "Mon" || dayWeek == "Tue" || dayWeek == "Wed" || dayWeek == "Thu" || dayWeek == "Fri")
-    Serial.print(" Work day. ");
-  else
-    Serial.print(" Weekend! "); 
-  Serial.print(" ");
-  
-  // Send date
-  Serial.print(rtc.getDateStr(FORMAT_LONG,FORMAT_LITTLEENDIAN,'/')); //dd.mm.yyy
-  Serial.print(" -- ");
+  lcd.setCursor(0,0);
 
-  // Send time
-  // Serial.println(rtc.getTimeStr());
-  
-//  String dayWeek = rtc.getDOWStr();
-//  if (dayWeek == "Thursday")
-//  {
-//    Serial.println("YES!");
-//  }
+  // si el dia, mes, hora o segundo estan en un solo digito, ie < 10
+  // agregamos un cero antes de ese digito para mantener consistente
+  // la salida a la pantalla LCD
 
-  String currentTime = rtc.getTimeStr();
-//  Serial.println(currentTime.substring(0,2)); // Hour
-//  Serial.println(currentTime.substring(3,5)); // Minutes
-//  Serial.println(currentTime.substring(6,8)); // Seconds
+  // imprimir fecha en formato dd/mm/yyyy
+  lcd.print(rtc.getDateStr(FORMAT_LONG,FORMAT_LITTLEENDIAN,'/')); //dd.mm.yyyy
 
+  lcd.setCursor(13,0);
 
-  // Time as ints :D!
-  int currentHour = currentTime.substring(0,2).toInt();
-  int currentMinute = currentTime.substring(3,5).toInt();
-  int currentSecond = currentTime.substring(6,8).toInt();
+  // imprimir dia de la semana
+  dayWeek = rtc.getDOWStr(FORMAT_SHORT);
+  lcd.print(dayWeek);
+
+  // imprimir hora 
+  lcd.setCursor(0,1);
+  currentTime = rtc.getTimeStr();
+  currentHour = currentTime.substring(0,2).toInt();
+  currentMinute = currentTime.substring(3,5).toInt();
+  currentSecond = currentTime.substring(6,8).toInt();
 
   if (currentHour < 10)
-    Serial.print(0);
-  Serial.print(currentHour);
-  Serial.print(":");
+    lcd.print(0);
+  lcd.print(currentHour);
+  lcd.print(":");
   if (currentMinute < 10)
-    Serial.print(0);
-  Serial.print(currentMinute);
-  Serial.print(":");
+    lcd.print(0);
+  lcd.print(currentMinute);
+  lcd.print(":");
   if (currentSecond < 10)
-    Serial.print(0);
-  Serial.print(currentSecond);
-  Serial.println("");
+    lcd.print(0);
+  lcd.print(currentSecond);
 
-//  if (currentSecond >= 30)
-//    Serial.println("Over 30 seconds!");
-//  else
-//    Serial.println("Under 30 seconds!");
-  
-  
-  // Wait one second before repeating :)
-  delay (1000);
+  // si el switch esta encendido, se usa el horario de verano
+  if (digitalRead(horario) == HIGH) 
+  {
+    // imprimir que se esta usando el horario de verano
+    lcd.setCursor(13,1);
+    lcd.print("VER");
+
+    // encender y apagar alarma dependiendo del horario o si se presiona un boton
+    if ( (dayWeek == "Mon" ||
+    dayWeek == "Tue" ||
+    dayWeek == "Wed" ||
+    dayWeek == "Thu" ||
+    dayWeek == "Fri") && 
+    (currentSecond >= 0 && currentSecond < 5) && 
+    ( (currentHour == 7 && (currentMinute == 0 || currentMinute == 50)) ||
+    (currentHour == 8 && currentMinute == 40) ||
+    (currentHour == 9 && (currentMinute == 30 || currentMinute == 45)) ||
+    (currentHour == 10 && currentMinute == 35) ||
+    (currentHour == 11 && currentMinute == 20) ||
+    (currentHour == 12 && (currentMinute == 10 || currentMinute == 25)) ||
+    (currentHour == 13 && currentMinute == 15) ||
+    (currentHour == 14 && (currentMinute == 0 || currentMinute == 50)) ||
+    (currentHour == 15 && currentMinute == 10) ) )
+    {
+      digitalWrite(LED_BUILTIN, HIGH);
+      digitalWrite(transistor, HIGH);
+    }
+    else
+    {
+      digitalWrite(LED_BUILTIN, LOW);
+      digitalWrite(transistor, LOW);
+    }
+  }
+  else
+  {
+    lcd.setCursor(13,1);
+    lcd.print("INV");
+
+    // encender y apagar alarma dependiendo del horario o si se presiona un boton
+    if ( (dayWeek == "Mon" ||
+    dayWeek == "Tue" ||
+    dayWeek == "Wed" ||
+    dayWeek == "Thu" ||
+    dayWeek == "Fri") && 
+    (currentSecond >= 0 && currentSecond < 5) && 
+    ( (currentHour == 7 && currentMinute == 30) ||
+    (currentHour == 8 && currentMinute == 15) ||
+    (currentHour == 9 && (currentMinute == 0 || currentMinute == 45)) ||
+    (currentHour == 10 && (currentMinute == 0 || currentMinute == 40)) ||
+    (currentHour == 11 && currentMinute == 25) ||
+    (currentHour == 12 && (currentMinute == 10 || currentMinute == 25)) ||
+    (currentHour == 13 && currentMinute == 15) ||
+    (currentHour == 14 && (currentMinute == 0 || currentMinute == 50)) ||
+    (currentHour == 15 && currentMinute == 10) ) )
+    {
+      digitalWrite(LED_BUILTIN, HIGH);
+      digitalWrite(transistor, HIGH);
+    }
+    else
+    {
+      digitalWrite(LED_BUILTIN, LOW);
+      digitalWrite(transistor, LOW);
+    }
+  }
+  // reinicia LCD para que no se congele durante horas de oficina
+  if ( (currentHour == 6 || currentHour == 10 || currentHour == 14) && currentMinute == 59 && currentSecond == 59)
+  {
+    lcd.clear();
+    lcd.begin(16, 2);
+  }
+  // delay (500);
 }
