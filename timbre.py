@@ -62,10 +62,10 @@ while True:
 		(hour is 15 and minutes is 10) )
 		):
 			pi.write(timbre, 1)
-			# print(pi.read(timbre))
+			print(pi.read(timbre))
 		else:
 			pi.write(timbre, 0)
-			# print(pi.read(timbre))
+			print(pi.read(timbre))
 	else: # horario de invierno
 		if ( 
 		(dayWeek <= 4) and 
@@ -81,7 +81,7 @@ while True:
 		(hour is 15 and minutes is 10) )
 		):
 			pi.write(timbre, 1)
-			# print(pi.read(timbre))
+			print(pi.read(timbre))
 		else:
 			pi.write(timbre, 0)
-			# print(pi.read(timbre))
+			print(pi.read(timbre))
