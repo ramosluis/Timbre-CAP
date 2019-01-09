@@ -29,13 +29,18 @@ import pigpio
 pi = pigpio.pi()
 
 # GPIO 23 (switch) como input y 24 (transistor) como output
-horario = 23
-timbre = 24
+HORARIO = 23
+TIMBRE = 24
 
-verano = 1
+# definir constantes restantes
+VERANO = 1
+ON = 1
+OFF = 0
 
-pi.set_mode(horario, pigpio.INPUT) # pin 16 fisicamente en placa
-pi.set_mode(timbre, pigpio.OUTPUT) # pin 18 fisicamente en placa
+pi.set_mode(HORARIO, pigpio.INPUT) # pin 16 fisicamente en placa
+pi.set_mode(TIMBRE, pigpio.OUTPUT) # pin 18 fisicamente en 
+
+pi.set_pull_up_down(HORARIO, pigpio.PUD_DOWN) # habilitar resistencia de pull down para el input
 
 while True:
 	time.sleep(1) # para depuracion mas facil, se puede borrar esta linea en la version final, pero no afecta el funcionamiento
@@ -47,7 +52,7 @@ while True:
 	minutes = int(now.strftime("%M"))
 	seconds = int(now.strftime("%S"))
 	
-	if pi.read(horario) == verano: # horario de verano
+	if pi.read(HORARIO) == VERANO: # horario de verano
 		if ( 
 		(dayWeek <= 4) and # lunes es 0 y viernes es 4
 		(seconds <= 5) and # timbre dura 6 segundos
@@ -61,11 +66,11 @@ while True:
 		(hour == 14 and (minutes == 0 or minutes == 50) ) or
 		(hour == 15 and minutes == 10) )
 		):
-			pi.write(timbre, 1)
-			print(pi.read(timbre))
+			pi.write(TIMBRE, ON)
+			print(pi.read(TIMBRE))
 		else:
-			pi.write(timbre, 0)
-			print(pi.read(timbre))
+			pi.write(TIMBRE, OFF)
+			print(pi.read(TIMBRE))
 	else: # horario de invierno
 		if ( 
 		(dayWeek <= 4) and 
@@ -80,8 +85,8 @@ while True:
 		(hour == 14 and (minutes == 0 or minutes == 50) ) or
 		(hour == 15 and minutes == 10) )
 		):
-			pi.write(timbre, 1)
-			print(pi.read(timbre))
+			pi.write(TIMBRE, ON)
+			print(pi.read(TIMBRE))
 		else:
-			pi.write(timbre, 0)
-			print(pi.read(timbre))
+			pi.write(TIMBRE, OFF)
+			print(pi.read(TIMBRE))
