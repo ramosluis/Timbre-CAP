@@ -47,19 +47,19 @@ while True:
 	minutes = int(now.strftime("%M"))
 	seconds = int(now.strftime("%S"))
 	
-	if pi.read(horario) is verano: # horario de verano
+	if pi.read(horario) == verano: # horario de verano
 		if ( 
 		(dayWeek <= 4) and # lunes es 0 y viernes es 4
 		(seconds <= 5) and # timbre dura 6 segundos
-		( (hour is 7 and (minutes is 0 or minutes is 50) ) or
-		(hour is 8 and minutes is 40) or
-		(hour is 9 and (minutes is 30 or minutes is 45) ) or
-		(hour is 10 and minutes is 35) or
-		(hour is 11 and minutes is 20) or
-		(hour is 12 and (minutes is 10 or minutes is 25) ) or
-		(hour is 13 and minutes is 15) or
-		(hour is 14 and (minutes is 0 or minutes is 50) ) or
-		(hour is 15 and minutes is 10) )
+		( (hour == 7 and (minutes == 0 or minutes == 50) ) or
+		(hour == 8 and minutes == 40) or
+		(hour == 9 and (minutes == 30 or minutes == 45) ) or
+		(hour == 10 and minutes == 35) or
+		(hour == 11 and minutes == 20) or
+		(hour == 12 and (minutes == 10 or minutes == 25) ) or
+		(hour == 13 and minutes == 15) or
+		(hour == 14 and (minutes == 0 or minutes == 50) ) or
+		(hour == 15 and minutes == 10) )
 		):
 			pi.write(timbre, 1)
 			print(pi.read(timbre))
@@ -70,15 +70,15 @@ while True:
 		if ( 
 		(dayWeek <= 4) and 
 		(seconds <= 5) and 
-		( (hour is 7 and minutes is 30) or
-		(hour is 8 and minutes is 15) or
-		(hour is 9 and (minutes is 0 or minutes is 45) ) or
-		(hour is 10 and (minutes is 0 or minutes is 40) ) or
-		(hour is 11 and minutes is 25) or
-		(hour is 12 and (minutes is 10 or minutes is 25) ) or
-		(hour is 13 and minutes is 15) or
-		(hour is 14 and (minutes is 0 or minutes is 50) ) or
-		(hour is 15 and minutes is 10) )
+		( (hour == 7 and minutes == 30) or
+		(hour == 8 and minutes == 15) or
+		(hour == 9 and (minutes == 0 or minutes == 45) ) or
+		(hour == 10 and (minutes == 0 or minutes == 40) ) or
+		(hour == 11 and minutes == 25) or
+		(hour == 12 and (minutes == 10 or minutes == 25) ) or
+		(hour == 13 and minutes == 15) or
+		(hour == 14 and (minutes == 0 or minutes == 50) ) or
+		(hour == 15 and minutes == 10) )
 		):
 			pi.write(timbre, 1)
 			print(pi.read(timbre))
